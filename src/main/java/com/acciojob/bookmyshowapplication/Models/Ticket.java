@@ -8,12 +8,13 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "ticketS")
-@Getter
-@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class Ticket {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String ticketId;
@@ -21,11 +22,15 @@ public class Ticket {
     private String movieName;
     private LocalDate showDate;
     private LocalTime showTime;
-    private String theaterNameAndAddress;
+    private String theaterName;
     private Integer totalAmtPaid;
 
     @ManyToOne
     @JoinColumn
     private User user;
+
+    @JoinColumn
+    @ManyToOne
+    private Show show;
 
 }

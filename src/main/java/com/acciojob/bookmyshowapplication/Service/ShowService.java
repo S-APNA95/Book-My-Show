@@ -18,19 +18,19 @@ import java.util.List;
 public class ShowService {
 
     @Autowired
-    ShowRepository showRepository;
+    private ShowRepository showRepository;
     @Autowired
-    MovieRepository movieRepository;
+    private MovieRepository movieRepository;
     @Autowired
-    TheaterRepository theaterRepository;
+    private TheaterRepository theaterRepository;
 
     @Autowired
-    ShowSeatRepository showSeatRepository;
+    private ShowSeatRepository showSeatRepository;
 
     public String addShows(AddShowRequest addShowRequest) {
         // here build the object of the show entity and save it on DB
             // need to get theater entity and movie entity : to create the show entity
-        Movie movie = movieRepository.findMovie(addShowRequest.getMovieName());
+        Movie movie = movieRepository.findMovieByMovieName(addShowRequest.getMovieName());
 
         Theater theater = theaterRepository.findById(addShowRequest.getTheaterId()).get();
 
@@ -38,11 +38,31 @@ public class ShowService {
                 .showDate(addShowRequest.getShowDate())
                 .showTime(addShowRequest.getShowTime())
                 .movie(movie)
+                .theater(theater)
                 .build();
         show = showRepository.save(show);
-        return "the show has been saved to the DB with showId" + show;
+
+        //associate corresponding show seats  along with it
+        List<TheaterSeats> theaterSeatsList = theater.getTheaterSeatsList();
+        List<ShowSeat> showSeatList = new ArrayList<>();
+        for(TheaterSeats theaterSeats: theaterSeatsList) {
+            ShowSeat showSeat = ShowSeat.builder()
+                    .seatNo(theaterSeats.getSeatNo())
+                    .seatType(theaterSeats.getSeatType())
+                    .isBooked(Boolean.FALSE)
+                    .show(show)
+                    .build();
+            showSeatList.add(showSeat);
+        }
+
+        // setting bidirectional mapping attribute
+        show.setShowSeatList(showSeatList);
+
+        showSeatRepository.saveAll(showSeatList);
+        return "the show has been saved to the DB with showId" + show.getShowId();
 
     }
+
     public String addShowSeats (AddShowSeatsRequest addShowSeatsRequest){
         Integer showId = addShowSeatsRequest.getShowId();
             Show show = showRepository.findById(showId).get();
@@ -57,7 +77,7 @@ public class ShowService {
                 ShowSeat showSeat = ShowSeat.builder()
                         .seatNo(theaterSeats.getSeatNo())
                         .seatType(theaterSeats.getSeatType())
-                        .isAvailable(Boolean.TRUE)
+                        .isBooked(Boolean.FALSE)
                         .show(show)
                         .build();
 

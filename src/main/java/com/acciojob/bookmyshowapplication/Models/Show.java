@@ -29,9 +29,9 @@ public class Show {
     private List<ShowSeat> showSeatList = new ArrayList<>();
 
 
-//    @ManyToOne
-//    @JoinColumn
-//    private Theater theater;
+    @ManyToOne
+    @JoinColumn
+    private Theater theater;
 
 
 }

@@ -1,5 +1,6 @@
 package com.acciojob.bookmyshowapplication.Controllers;
 
+import Request.AddUserRequest;
 import com.acciojob.bookmyshowapplication.Models.User;
 import com.acciojob.bookmyshowapplication.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+
     @Autowired
-    UserService userService;
+    private UserService userService;
+
     @PostMapping("/addUser")
-    public String addUser(@RequestBody User user){
-        String response = userService.addUser(user);
-        return response;
+    public String addUser(@RequestBody AddUserRequest addUserRequest){
+       return userService.addUser(addUserRequest);
+
     }
 }
 

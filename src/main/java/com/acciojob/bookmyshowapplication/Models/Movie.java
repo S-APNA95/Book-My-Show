@@ -24,8 +24,8 @@ public class Movie {
 
     @Column (unique = true)
     private String movieName;
-    private double duration;
-    private double rating;
+    private Double duration;
+    private Double rating;
 
     @Enumerated(value = EnumType.STRING)
     private Language language;

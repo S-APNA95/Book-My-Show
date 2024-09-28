@@ -5,6 +5,8 @@ import Request.AddShowSeatsRequest;
 import com.acciojob.bookmyshowapplication.Models.Show;
 import com.acciojob.bookmyshowapplication.Service.ShowService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,15 +19,15 @@ public class ShowController {
     ShowService showService;
 
     @PostMapping("/addShow")
-    public String addShows (@RequestBody AddShowRequest addShowRequest){
+    public ResponseEntity addShows (@RequestBody AddShowRequest addShowRequest){
         String result = showService.addShows(addShowRequest);
-        return result;
+        return new ResponseEntity(result, HttpStatus.OK);
     }
  
     @PostMapping ("/addShowSeats")
-    public String addShowSeats (@RequestBody AddShowSeatsRequest addShowSeatsRequest){
+    public ResponseEntity addShowSeats (@RequestBody AddShowSeatsRequest addShowSeatsRequest){
         String response = showService.addShowSeats(addShowSeatsRequest);
-        return response;
+        return new ResponseEntity(response, HttpStatus.OK);
 
     }
 }

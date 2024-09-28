@@ -6,6 +6,7 @@ import com.acciojob.bookmyshowapplication.Enums.SeatType;
 import com.acciojob.bookmyshowapplication.Exceptions.SeatUnavailableException;
 import com.acciojob.bookmyshowapplication.Models.*;
 import com.acciojob.bookmyshowapplication.Repository.*;
+import com.acciojob.bookmyshowapplication.Responses.TicketResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +27,7 @@ public class TicketService {
     @Autowired
     private TicketRepository ticketRepository;
 
-    public Ticket bookTicket(BookTicketRequest bookTicketRequest) throws Exception {
-         //  1. calculate the total cost of the tickets
-        Movie movie =movieRepository.findMovieByMovieName(bookTicketRequest.getMovieName());
-        Theater theater = theaterRepository.findById(bookTicketRequest.getTheaterId()).get();
+    public String bookTicket(BookTicketRequest bookTicketRequest) {
 
         // 1.1 find the show entity
         Show show = showRepository.findById(bookTicketRequest.getShowId()).get();
@@ -40,42 +38,54 @@ public class TicketService {
         //3 .   make seats booked : and calculate the amount
         Integer totalAmount = 0;
         List<ShowSeat> showSeatList = show.getShowSeatList();
-            if(bookTicketRequest.getRequestedSeats().contains(seatNo)){
+        for(ShowSeat showSeat : showSeatList) {
+            String seatNo = showSeat.getSeatNo();
+            if (bookTicketRequest.getRequestedSeats().contains(seatNo)) {
 
                 showSeat.setIsBooked(Boolean.TRUE);
 
-                if(showSeat.getSeatType().equals(SeatType.CLASSIC)){
-                    totalAmount = totalAmount +100;
-                }
-            }
+                if (showSeat.getSeatType().equals(SeatType.CLASSIC))
+                    totalAmount = totalAmount + 100;
 
-        }
-        if(areAllSeatsAvailable == Boolean.FALSE){
-            throw new SeatUnavailableException("The requested seats are Unavailable");
-        }
-
-        // 2. make seats booked : only if the seats are available : otherwise throw exception error
-        for(String seatNo: bookTicketRequest.getRequestedSeats()){
-            for(ShowSeat showSeat : showSeatList){
-                if(showSeat.getSeatNo().equals(seatNo)){
-                   showSeat.setIsAvailable(Boolean.FALSE);
-
-                }
+                else
+                    totalAmount = totalAmount + 150;
             }
 
         }
 
-        // 3. save the ticket entity
-        Ticket ticket = Ticket.builder().movieName(bookTicketRequest.getMovieName())
-                .showDate(bookTicketRequest.getShowDate())
-                .theaterNameAndAddress(theater.getName()+" "+ theater.getAddress())
-                .showTime(bookTicketRequest.getShowTime())
+        // 3. save the ticket entity into DB and return ticket entity
+        Ticket ticket = Ticket.builder().movieName(show.getMovie().getMovieName())
+                .showDate(show.getShowDate())
+                .theaterName(show.getTheater().getName())
+                .showTime(show.getShowTime())
                 .totalAmtPaid(totalAmount)
+                .bookedSeats((bookTicketRequest.getRequestedSeats().toString()))
+                .show(show)
+                .user(user)
                 .build();
 
-        ticket = ticketRepository.save(ticket);
-        // 4. generate and return back the actual ticket response
 
-        return ticket;
+        showSeatRepository.saveAll(showSeatList);
+
+        ticket = ticketRepository.save(ticket);
+        return ticket.getTicketId();     // generate and return back the actual ticket response
+
+    }
+
+    public TicketResponse generateTicket  (String ticketId){
+        Ticket ticket = ticketRepository.findById(ticketId).get();
+
+        //ENTITY NEEDS TO BE CONVERTED TO TICKETrESPONSE
+
+        TicketResponse ticketResponse = TicketResponse.builder()
+                                        .bookedSeats(ticket.getBookedSeats())
+                .movieName(ticket.getMovieName())
+                        .showDate(ticket.getShowDate())
+                                .showTime(ticket.getShowTime())
+                                        .theaterName(ticket.getTheaterName())
+                                                .totalAmtPaid(ticket.getTotalAmtPaid()).build();
+
+        return ticketResponse;
+
     }
 }

@@ -1,5 +1,7 @@
 package com.acciojob.bookmyshowapplication.Enums;
 
+import lombok.Data;
+
 public enum Language {
     HINDI,
     KANNADA,

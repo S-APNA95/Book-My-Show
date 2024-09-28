@@ -9,9 +9,11 @@ import java.util.List;
 @Data
 public class BookTicketRequest {
 
-    private List<String> requestedSeats;
     private Integer showId;
+    private List<String> requestedSeats;
     private Integer userId;
+    private String ticketId;
+
 
 
 }
